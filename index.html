@@ -2,11 +2,11 @@
 <html lang="ko" class="h-full bg-slate-950 text-slate-100 antialiased">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>HINTER - 실시간 공정개선 통합 워크스페이스</title>
+  <title>HINTER - 모바일/PC 반응형 실시간 공정개선 워크스페이스</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -15,7 +15,10 @@
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   
   <style>
-    body { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+    body { 
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
     
     .interactive-card {
       transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
@@ -30,10 +33,14 @@
     }
     .btn-press:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
     }
     .btn-press:active:not(:disabled) {
-      transform: translateY(0.5px);
+      transform: scale(0.98);
+    }
+
+    /* Smooth Momentum Scrolling for Touch */
+    .touch-scroll {
+      -webkit-overflow-scrolling: touch;
     }
 
     @keyframes ping-slow {
@@ -45,142 +52,152 @@
 
 <body class="min-h-full flex flex-col selection:bg-blue-500/30 selection:text-blue-300">
 
-  <!-- Header with Real-time Sync Indicator -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/25">
-          <i data-lucide="layers" class="w-5 h-5"></i>
+  <!-- Responsive Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-5 h-14 sm:h-16 flex items-center justify-between gap-2">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/25 shrink-0">
+          <i data-lucide="layers" class="w-4 h-4 sm:w-5 sm:h-5"></i>
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-bold tracking-tight text-white">HINTER</span>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">16_1_ganadi</span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <span class="text-sm sm:text-base font-extrabold tracking-tight text-white">HINTER</span>
+            <span class="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold truncate">16_1</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-none">구글 시트 실시간 연동 워크스페이스</p>
+          <p class="text-[10px] sm:text-[11px] text-slate-400 leading-none truncate hidden xs:block">실시간 공정개선 관리</p>
         </div>
       </div>
 
-      <!-- Real-time Sync Status Badge -->
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950 border border-slate-800 text-xs font-mono">
-          <span class="relative flex h-2 w-2">
+      <!-- Real-time Indicator & Responsive Tab Navigation -->
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        
+        <!-- Live Sync Dot -->
+        <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-950 border border-slate-800 text-[10px] sm:text-xs font-mono">
+          <span class="relative flex h-2 w-2 shrink-0">
             <span class="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span class="text-slate-300" id="syncStatus">스프레드시트 양방향 실시간 동기화</span>
-          <span class="text-[10px] text-slate-500 border-l border-slate-800 pl-2" id="syncTime">방금</span>
+          <span class="text-slate-300 hidden md:inline" id="syncStatus">스프레드시트 실시간 동기화</span>
+          <span class="text-slate-300 md:hidden" id="syncStatusMobile">실시간</span>
+          <span class="text-[9px] sm:text-[10px] text-slate-500 border-l border-slate-800 pl-1.5 hidden sm:inline" id="syncTime">방금</span>
         </div>
 
-        <!-- Tab Nav -->
-        <nav class="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800">
+        <!-- Tab Buttons (Mobile Optimized) -->
+        <nav class="flex items-center p-0.5 sm:p-1 rounded-xl bg-slate-950 border border-slate-800">
           <button id="btnTab1" onclick="switchScreen(1)"
-            class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm">
-            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-            <span>1. 작성 & 계획표</span>
+            class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 shrink-0"></i>
+            <span class="hidden sm:inline">1. 작성 & 계획표</span>
+            <span class="sm:hidden">1. 작성</span>
           </button>
           <button id="btnTab2" onclick="switchScreen(2)"
-            class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
-            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-            <span>2. 실시간 대시보드</span>
+            class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 shrink-0"></i>
+            <span class="hidden sm:inline">2. 실시간 대시보드</span>
+            <span class="sm:hidden">2. 대시보드</span>
           </button>
         </nav>
       </div>
+
     </div>
   </header>
 
   <!-- ==================== 화면 1: 단일 작성 및 자동 완성 뷰 ==================== -->
-  <main id="screen1" class="flex-1 max-w-7xl w-full mx-auto p-5 sm:p-6 lg:p-8 flex flex-col justify-center">
+  <main id="screen1" class="flex-1 max-w-7xl w-full mx-auto p-3.5 sm:p-5 lg:p-8 flex flex-col justify-center">
     
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
       
-      <!-- Left Column: Input Form (7 Cols) -->
-      <section class="lg:col-span-7 space-y-4">
+      <!-- Left Column: Input Form (7 Cols on Desktop) -->
+      <section class="lg:col-span-7 space-y-3 sm:space-y-4">
         
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 class="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
               개선안 단일 작성 및 승인 부서 지정
             </h2>
-            <p class="text-xs text-slate-400 mt-0.5">선택된 부서는 [-] 대기 상태로 등록되며, 미선택 부서는 [X] 처리됩니다.</p>
+            <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">선택된 부서는 [-] 대기 상태, 미선택 부서는 [X]로 등록됩니다.</p>
           </div>
-          <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">시트 실시간 저장</span>
+          <span class="text-[10px] sm:text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded shrink-0">
+            시트 연동
+          </span>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden interactive-card">
-          <form id="planForm" onsubmit="event.preventDefault(); submitData();" class="space-y-4">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-2xl relative overflow-hidden interactive-card">
+          <form id="planForm" onsubmit="event.preventDefault(); submitData();" class="space-y-3.5 sm:space-y-4">
             
             <!-- Problem -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <label for="problem" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-400"></i>
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-400 shrink-0"></i>
                   현장 문제점
                 </label>
-                <span class="text-[11px] font-mono text-slate-500">2.1 분석</span>
+                <span class="text-[10px] sm:text-[11px] font-mono text-slate-500">2.1 분석</span>
               </div>
               <textarea id="problem" rows="2" required placeholder="도출된 공정 문제점 이슈 (예: 1라인 조립 대기시간 지연)" oninput="syncData()"
-                class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
+                class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3 py-2 sm:px-3.5 sm:py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
             </div>
 
             <!-- Solution -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <label for="solution" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400"></i>
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
                   맞춤형 개선대책
                 </label>
-                <span class="text-[11px] font-mono text-slate-500">2.2 계획</span>
+                <span class="text-[10px] sm:text-[11px] font-mono text-slate-500">2.2 계획</span>
               </div>
               <textarea id="solution" rows="2" required placeholder="구체적 개선대책 (예: 레이아웃 변경 및 부품대 재배치)" oninput="syncData()"
-                class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
+                class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3 py-2 sm:px-3.5 sm:py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
             </div>
 
-            <!-- 3-Department Approval Selection -->
+            <!-- Department Selection (Mobile Responsive Cards) -->
             <div class="pt-3 border-t border-slate-800/90">
               <div class="flex items-center justify-between mb-2">
                 <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i>
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
                   원하는 승인 대상 부서 선택
                 </label>
-                <span class="text-[11px] text-slate-400">선택 시 [-] 대기 / 미선택 시 [X]</span>
+                <span class="text-[10px] sm:text-[11px] text-slate-400">선택 [-] / 미선택 [X]</span>
               </div>
 
-              <div class="grid grid-cols-3 gap-2.5">
-                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+              <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
+                <label class="cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-lg p-2 sm:p-2.5 transition select-none">
                   <input type="checkbox" id="deptSaenggi" checked onchange="syncData()"
                     class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
-                  <div class="flex flex-col">
-                    <span class="text-xs font-bold text-slate-200">생산기술</span>
-                    <span class="text-[9px] text-slate-500">생기 승인</span>
+                  <div class="min-w-0">
+                    <div class="text-[11px] sm:text-xs font-bold text-slate-200 truncate">생산기술</div>
+                    <div class="text-[9px] text-slate-500 hidden sm:block">생기 승인</div>
                   </div>
                 </label>
 
-                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+                <label class="cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-lg p-2 sm:p-2.5 transition select-none">
                   <input type="checkbox" id="deptBojeon" checked onchange="syncData()"
                     class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
-                  <div class="flex flex-col">
-                    <span class="text-xs font-bold text-slate-200">설비보전</span>
-                    <span class="text-[9px] text-slate-500">보전 승인</span>
+                  <div class="min-w-0">
+                    <div class="text-[11px] sm:text-xs font-bold text-slate-200 truncate">설비보전</div>
+                    <div class="text-[9px] text-slate-500 hidden sm:block">보전 승인</div>
                   </div>
                 </label>
 
-                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+                <label class="cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-lg p-2 sm:p-2.5 transition select-none">
                   <input type="checkbox" id="deptAnjeon" checked onchange="syncData()"
                     class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
-                  <div class="flex flex-col">
-                    <span class="text-xs font-bold text-slate-200">안전환경</span>
-                    <span class="text-[9px] text-slate-500">안전 승인</span>
+                  <div class="min-w-0">
+                    <div class="text-[11px] sm:text-xs font-bold text-slate-200 truncate">안전환경</div>
+                    <div class="text-[9px] text-slate-500 hidden sm:block">안전 승인</div>
                   </div>
                 </label>
               </div>
             </div>
 
-            <!-- Submit Button -->
+            <!-- Submit Button (High-touch target) -->
             <button type="submit" id="saveBtn"
-              class="btn-press w-full mt-2 py-3 px-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 transition disabled:opacity-50 disabled:cursor-not-allowed">
-              <i data-lucide="send" class="w-3.5 h-3.5"></i>
-              <span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>
+              class="btn-press w-full mt-2 min-h-[46px] py-2.5 sm:py-3 px-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-lg sm:rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>구글 시트 저장 및 실시간 브로드캐스트</span>
             </button>
 
             <div id="message" class="text-center text-xs font-medium min-h-[1.25rem] transition-all"></div>
@@ -189,63 +206,63 @@
 
       </section>
 
-      <!-- Right Column: Auto-Generated Plan View (5 Cols) -->
-      <section class="lg:col-span-5 space-y-4">
+      <!-- Right Column: Auto-Generated Plan View (5 Cols on Desktop) -->
+      <section class="lg:col-span-5 space-y-3 sm:space-y-4">
         
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 class="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5 sm:gap-2">
             개선활동계획서 자동 연동 뷰
           </h2>
-          <span id="badge-all-status" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span id="badge-all-status" class="text-[10px] sm:text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
             검토 대기 중
           </span>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-4 interactive-card">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-2xl space-y-3.5 sm:space-y-4 interactive-card">
           
-          <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-[11px]">
+          <div class="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-slate-800 text-[10px] sm:text-[11px]">
             <span class="font-mono text-slate-400">양식 코드: NCS-02040103-PL</span>
-            <span class="text-slate-500">타이핑: <strong class="text-blue-400 font-mono">1회</strong> (단일 입력)</span>
+            <span class="text-slate-500">타이핑: <strong class="text-blue-400 font-mono">1회</strong> (단일화)</span>
           </div>
 
           <div class="space-y-1">
-            <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+            <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-medium">
               <span>2.1 현장 문제점 분석</span>
               <span class="text-blue-400 font-mono">실시간 미러링</span>
             </div>
-            <div id="view-prob" class="bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed">
+            <div id="view-prob" class="bg-slate-950 border border-slate-800/80 rounded-lg p-2.5 sm:p-3 text-xs text-slate-500 font-mono min-h-[42px] break-all leading-relaxed">
               (문제점을 입력하면 실시간으로 연동됩니다)
             </div>
           </div>
 
           <div class="space-y-1">
-            <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+            <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-medium">
               <span>2.2 맞춤형 개선대책</span>
               <span class="text-emerald-400 font-mono">계획표 매핑</span>
             </div>
-            <div id="view-sol" class="bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed">
+            <div id="view-sol" class="bg-slate-950 border border-slate-800/80 rounded-lg p-2.5 sm:p-3 text-xs text-slate-500 font-mono min-h-[42px] break-all leading-relaxed">
               (개선대책을 입력하면 실시간으로 연동됩니다)
             </div>
           </div>
 
           <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
-            <div class="text-[11px] text-slate-400 font-medium">2.3 유관부서 실시간 승인 상태</div>
-            <div class="grid grid-cols-3 gap-2">
-              <div id="status-sg" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+            <div class="text-[10px] sm:text-[11px] text-slate-400 font-medium">2.3 유관부서 실시간 승인 상태</div>
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+              <div id="status-sg" class="py-1.5 px-1 sm:px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[10px] sm:text-[11px] font-bold truncate">
                 생기: -
               </div>
-              <div id="status-bj" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+              <div id="status-bj" class="py-1.5 px-1 sm:px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[10px] sm:text-[11px] font-bold truncate">
                 보전: -
               </div>
-              <div id="status-aj" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+              <div id="status-aj" class="py-1.5 px-1 sm:px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[10px] sm:text-[11px] font-bold truncate">
                 안전: -
               </div>
             </div>
           </div>
 
-          <div class="bg-slate-950/90 rounded-lg p-3 border border-slate-800 text-xs flex items-center justify-between">
-            <span class="text-slate-400">승인 종합 판정</span>
-            <span id="gate-decision" class="font-bold text-amber-400 flex items-center gap-1">
+          <div class="bg-slate-950/90 rounded-lg p-2.5 sm:p-3 border border-slate-800 text-xs flex items-center justify-between">
+            <span class="text-slate-400 text-[11px] sm:text-xs">승인 종합 판정</span>
+            <span id="gate-decision" class="font-bold text-amber-400 flex items-center gap-1 text-[11px] sm:text-xs">
               <i data-lucide="clock" class="w-3.5 h-3.5"></i> 부서 검토 대기
             </span>
           </div>
@@ -259,87 +276,107 @@
   </main>
 
   <!-- ==================== 화면 2: 실시간 승인 현황 및 롤백 대시보드 ==================== -->
-  <main id="screen2" class="flex-1 max-w-7xl w-full mx-auto p-5 sm:p-6 lg:p-8 hidden space-y-6">
+  <main id="screen2" class="flex-1 max-w-7xl w-full mx-auto p-3.5 sm:p-5 lg:p-8 hidden space-y-4 sm:space-y-6">
     
-    <!-- Top KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-slate-400 font-medium">핵심 KPI (총 롤백 발생)</span>
-          <div class="text-2xl font-bold text-rose-400 mt-1" id="dashTotalRollbacks">0건</div>
-          <p class="text-[11px] text-slate-500 mt-0.5">목표: 0건 (반려 시 증가)</p>
+    <!-- Top KPI Cards: 2x2 Grid on Mobile, 4 Cols on Desktop -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col justify-between interactive-card">
+        <div class="flex items-center justify-between gap-1">
+          <span class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">핵심 KPI (롤백 수)</span>
+          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-          <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-        </div>
-      </div>
-
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-slate-400 font-medium">혁신 KPI (평균 타이핑 횟수)</span>
-          <div class="text-2xl font-bold text-blue-400 mt-1" id="dashAvgTyping">1.0회</div>
-          <p class="text-[11px] text-slate-500 mt-0.5">목표: 1회 (3회 ➔ 1회 축소)</p>
-        </div>
-        <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-          <i data-lucide="keyboard" class="w-5 h-5"></i>
+        <div class="mt-2">
+          <div class="text-xl sm:text-2xl font-black text-rose-400" id="dashTotalRollbacks">0건</div>
+          <p class="text-[10px] text-slate-500 mt-0.5 truncate">목표: 0건 (반려 시 증가)</p>
         </div>
       </div>
 
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-slate-400 font-medium">전체 등록 과제</span>
-          <div class="text-2xl font-bold text-slate-200 mt-1" id="dashTotalCount">0건</div>
-          <p class="text-[11px] text-slate-500 mt-0.5">구글 시트 연동</p>
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col justify-between interactive-card">
+        <div class="flex items-center justify-between gap-1">
+          <span class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">혁신 KPI (타이핑)</span>
+          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+            <i data-lucide="keyboard" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-          <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+        <div class="mt-2">
+          <div class="text-xl sm:text-2xl font-black text-blue-400" id="dashAvgTyping">1.0회</div>
+          <p class="text-[10px] text-slate-500 mt-0.5 truncate">목표: 1회 (3회 ➔ 1회)</p>
         </div>
       </div>
 
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-xs text-slate-400 font-medium">실시 직행 승인율</span>
-          <div class="text-2xl font-bold text-emerald-400 mt-1" id="dashApprovalRate">0%</div>
-          <p class="text-[11px] text-slate-500 mt-0.5" id="dashApprovalCount">0건 완료</p>
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col justify-between interactive-card">
+        <div class="flex items-center justify-between gap-1">
+          <span class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">전체 등록 과제</span>
+          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0">
+            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </div>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-          <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        <div class="mt-2">
+          <div class="text-xl sm:text-2xl font-black text-slate-200" id="dashTotalCount">0건</div>
+          <p class="text-[10px] text-slate-500 mt-0.5 truncate">구글 시트 실시간 연동</p>
         </div>
       </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col justify-between interactive-card">
+        <div class="flex items-center justify-between gap-1">
+          <span class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">실시 직행 승인율</span>
+          <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="text-xl sm:text-2xl font-black text-emerald-400" id="dashApprovalRate">0%</div>
+          <p class="text-[10px] text-slate-500 mt-0.5 truncate" id="dashApprovalCount">0건 완료</p>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+    <!-- Main Dashboard Container -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 sm:p-5 shadow-2xl space-y-4">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-800">
         <div>
           <h3 class="text-sm font-bold text-white flex items-center gap-2">
             <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
-            유관부서별 실시간 승인 현황 및 과제별 롤백 모니터링
+            유관부서별 실시간 승인 현황 및 모니터링
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5">각 부서는 [-, Y, N] 드롭다운으로 변경 가능하며, 미지정 부서는 [X]로 잠깁니다.</p>
+          <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">선택 부서는 [-, Y, N] 드롭다운, 미선택 부서는 [X]로 잠깁니다.</p>
         </div>
         <div class="flex items-center gap-2">
           <a href="https://docs.google.com/spreadsheets/d/15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU/edit?usp=sharing" target="_blank"
-             class="btn-press px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-emerald-400 rounded-lg border border-slate-700 flex items-center gap-1.5">
+             class="btn-press px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-emerald-400 rounded-lg border border-slate-700 flex items-center gap-1.5 shrink-0">
             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-            시트 원본 열기
+            <span>시트 원본 열기</span>
           </a>
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+      <!-- 1. Mobile Optimized Card List View (Visible on Screen < md: 768px) -->
+      <div id="dashboardMobileCards" class="md:hidden space-y-3">
+        <div class="py-8 text-center text-slate-500 text-xs font-mono">
+          실시간 데이터를 불러오는 중입니다...
+        </div>
+      </div>
+
+      <!-- 2. Desktop Full Table View (Visible on Screen >= md: 768px) -->
+      <div class="hidden md:block overflow-x-auto touch-scroll">
+        <table class="w-full text-left text-xs border-collapse min-w-[700px]">
           <thead>
             <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/60 font-mono">
-              <th class="py-2.5 px-3">No</th>
+              <th class="py-2.5 px-3 w-12">No</th>
               <th class="py-2.5 px-3">현장 문제점 (2.1)</th>
               <th class="py-2.5 px-3">맞춤형 개선대책 (2.2)</th>
-              <th class="py-2.5 px-2 text-center text-emerald-400">생기</th>
-              <th class="py-2.5 px-2 text-center text-blue-400">보전</th>
-              <th class="py-2.5 px-2 text-center text-amber-400">안전</th>
-              <th class="py-2.5 px-2 text-center text-blue-400">타이핑</th>
-              <th class="py-2.5 px-2 text-center text-rose-400">롤백</th>
-              <th class="py-2.5 px-3 text-right">이관 상태</th>
+              <th class="py-2.5 px-2 text-center text-emerald-400 w-24">생기</th>
+              <th class="py-2.5 px-2 text-center text-blue-400 w-24">보전</th>
+              <th class="py-2.5 px-2 text-center text-amber-400 w-24">안전</th>
+              <th class="py-2.5 px-2 text-center text-blue-400 w-16">타이핑</th>
+              <th class="py-2.5 px-2 text-center text-rose-400 w-16">롤백</th>
+              <th class="py-2.5 px-3 text-right w-28">이관 상태</th>
             </tr>
           </thead>
           <tbody id="dashboardTableBody" class="divide-y divide-slate-800/80 text-slate-200">
@@ -349,17 +386,19 @@
           </tbody>
         </table>
       </div>
+
     </div>
 
   </main>
 
-  <footer class="border-t border-slate-800/60 py-3 px-5 bg-slate-950 text-slate-500 text-[11px] mt-auto">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
+  <!-- Responsive Footer -->
+  <footer class="border-t border-slate-800/60 py-3 px-4 sm:px-5 bg-slate-950 text-slate-500 text-[10px] sm:text-[11px] mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2">
+      <div class="flex items-center gap-1.5">
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
         <span>HINT 2기 생산관리 · 16_1_ganadi (Google Apps Script Live Webhook Connected)</span>
       </div>
-      <div class="font-mono text-slate-500">
+      <div class="font-mono text-slate-500 text-[10px]">
         Google Spreadsheet Live API Connected
       </div>
     </div>
@@ -385,13 +424,13 @@
       if (screenNum === 1) {
         s1.classList.remove('hidden');
         s2.classList.add('hidden');
-        b1.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm";
-        b2.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
+        b1.className = "flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm";
+        b2.className = "flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
       } else {
         s1.classList.add('hidden');
         s2.classList.remove('hidden');
-        b2.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm";
-        b1.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
+        b2.className = "flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm";
+        b1.className = "flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
         renderDashboardTable(currentRows);
       }
       renderIcons();
@@ -409,19 +448,19 @@
       const probView = document.getElementById('view-prob');
       if (prob) {
         probView.innerText = prob;
-        probView.className = "bg-slate-950 border border-blue-500/40 rounded-lg p-3 text-xs text-slate-200 font-mono min-h-[46px] break-all leading-relaxed";
+        probView.className = "bg-slate-950 border border-blue-500/40 rounded-lg p-2.5 sm:p-3 text-xs text-slate-200 font-mono min-h-[42px] break-all leading-relaxed";
       } else {
         probView.innerText = "(문제점을 입력하면 실시간으로 연동됩니다)";
-        probView.className = "bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed";
+        probView.className = "bg-slate-950 border border-slate-800/80 rounded-lg p-2.5 sm:p-3 text-xs text-slate-500 font-mono min-h-[42px] break-all leading-relaxed";
       }
 
       const solView = document.getElementById('view-sol');
       if (sol) {
         solView.innerText = sol;
-        solView.className = "bg-slate-950 border border-emerald-500/40 rounded-lg p-3 text-xs text-slate-200 font-mono min-h-[46px] break-all leading-relaxed";
+        solView.className = "bg-slate-950 border border-emerald-500/40 rounded-lg p-2.5 sm:p-3 text-xs text-slate-200 font-mono min-h-[42px] break-all leading-relaxed";
       } else {
         solView.innerText = "(개선대책을 입력하면 실시간으로 연동됩니다)";
-        solView.className = "bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed";
+        solView.className = "bg-slate-950 border border-slate-800/80 rounded-lg p-2.5 sm:p-3 text-xs text-slate-500 font-mono min-h-[42px] break-all leading-relaxed";
       }
 
       const updateGate = (elId, name, val) => {
@@ -429,13 +468,13 @@
         if (!el) return;
         el.innerText = `${name}: ${val}`;
         if (val === 'Y') {
-          el.className = "py-1.5 px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[11px] font-bold";
+          el.className = "py-1.5 px-1 sm:px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[10px] sm:text-[11px] font-bold";
         } else if (val === 'N') {
-          el.className = "py-1.5 px-2 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-center font-mono text-[11px] font-bold";
+          el.className = "py-1.5 px-1 sm:px-2 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-center font-mono text-[10px] sm:text-[11px] font-bold";
         } else if (val === '-') {
-          el.className = "py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-center font-mono text-[11px] font-bold";
+          el.className = "py-1.5 px-1 sm:px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-center font-mono text-[10px] sm:text-[11px] font-bold";
         } else {
-          el.className = "py-1.5 px-2 rounded bg-slate-900 border border-slate-800 text-slate-500 text-center font-mono text-[11px] font-bold";
+          el.className = "py-1.5 px-1 sm:px-2 rounded bg-slate-900 border border-slate-800 text-slate-500 text-center font-mono text-[10px] sm:text-[11px] font-bold";
         }
       };
 
@@ -449,14 +488,14 @@
 
       if (active.length === 0) {
         decisionEl.innerHTML = '<i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> 부서 미선택';
-        decisionEl.className = "font-bold text-slate-500 flex items-center gap-1";
+        decisionEl.className = "font-bold text-slate-500 flex items-center gap-1 text-[11px] sm:text-xs";
         allBadge.innerText = '부서 미선택';
-        allBadge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700';
+        allBadge.className = 'text-[10px] sm:text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700';
       } else {
         decisionEl.innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> 부서 검토 대기';
-        decisionEl.className = "font-bold text-amber-400 flex items-center gap-1";
+        decisionEl.className = "font-bold text-amber-400 flex items-center gap-1 text-[11px] sm:text-xs";
         allBadge.innerText = '검토 대기 중';
-        allBadge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20';
+        allBadge.className = 'text-[10px] sm:text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20';
       }
       renderIcons();
     }
@@ -487,7 +526,8 @@
 
           currentRows = parsed;
           renderDashboardTable(currentRows);
-          document.getElementById('syncTime').innerText = new Date().toLocaleTimeString('ko-KR');
+          const nowStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          document.getElementById('syncTime').innerText = nowStr;
         }
       } catch (err) {
         console.error('Realtime sync error:', err);
@@ -497,13 +537,13 @@
     }
 
     // 부서별 셀 렌더링 함수 (X: 비활성 고정 / 그 외: [-, Y, N] 드롭다운)
-    function renderDeptCell(rowId, dept, val) {
+    function renderDeptCell(rowId, dept, val, isMobile = false) {
       const v = (val || '-').toUpperCase().trim();
 
       // 미선택 부서는 X 표시 및 드롭다운 비활성화
       if (v === 'X') {
         return `
-          <span class="inline-flex items-center justify-center w-14 py-1 rounded text-xs font-bold font-mono bg-slate-900/60 text-slate-500 border border-slate-800 cursor-not-allowed select-none" title="승인 대상 아님 (X)">
+          <span class="inline-flex items-center justify-center ${isMobile ? 'w-full py-1.5' : 'w-14 py-1'} rounded text-xs font-bold font-mono bg-slate-900/60 text-slate-500 border border-slate-800 cursor-not-allowed select-none" title="승인 대상 아님 (X)">
             X
           </span>
         `;
@@ -519,7 +559,7 @@
 
       return `
         <select onchange="updateDepartmentStatus(${rowId}, '${dept}', this.value)"
-          class="cursor-pointer px-2 py-1 rounded text-xs font-bold font-mono border text-center outline-none transition shadow-sm ${styleClass}">
+          class="cursor-pointer ${isMobile ? 'w-full py-1.5' : 'px-2 py-1'} rounded text-xs font-bold font-mono border text-center outline-none transition shadow-sm ${styleClass}">
           <option value="-" ${v === '-' ? 'selected' : ''}>- (대기)</option>
           <option value="Y" ${v === 'Y' ? 'selected' : ''}>Y (통과)</option>
           <option value="N" ${v === 'N' ? 'selected' : ''}>N (반려)</option>
@@ -584,8 +624,12 @@
       renderDashboardTable(currentRows);
 
       const syncStatusEl = document.getElementById('syncStatus');
-      syncStatusEl.innerText = `[${dept.toUpperCase()}] 시트 저장 중 (${nextVal})...`;
-      syncStatusEl.className = "text-amber-400 font-bold";
+      const syncStatusMobileEl = document.getElementById('syncStatusMobile');
+      const statusText = `[${dept.toUpperCase()}] 저장 중 (${nextVal})...`;
+      syncStatusEl.innerText = statusText;
+      syncStatusMobileEl.innerText = statusText;
+      syncStatusEl.className = "text-amber-400 font-bold hidden md:inline";
+      syncStatusMobileEl.className = "text-amber-400 font-bold md:hidden";
 
       try {
         await fetch(APPS_SCRIPT_URL, {
@@ -602,11 +646,17 @@
           })
         });
 
-        syncStatusEl.innerText = `✓ [${dept.toUpperCase()}] 시트 저장 완료 (${nextVal})`;
-        syncStatusEl.className = "text-emerald-400 font-bold";
+        const successText = `✓ [${dept.toUpperCase()}] 저장 완료 (${nextVal})`;
+        syncStatusEl.innerText = successText;
+        syncStatusMobileEl.innerText = successText;
+        syncStatusEl.className = "text-emerald-400 font-bold hidden md:inline";
+        syncStatusMobileEl.className = "text-emerald-400 font-bold md:hidden";
+        
         setTimeout(() => {
-          syncStatusEl.innerText = "스프레드시트 양방향 실시간 동기화";
-          syncStatusEl.className = "text-slate-300";
+          syncStatusEl.innerText = "스프레드시트 실시간 동기화";
+          syncStatusMobileEl.innerText = "실시간";
+          syncStatusEl.className = "text-slate-300 hidden md:inline";
+          syncStatusMobileEl.className = "text-slate-300 md:hidden";
         }, 2000);
 
         setTimeout(() => {
@@ -667,7 +717,7 @@
         });
 
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
+        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i><span>구글 시트 저장 및 실시간 브로드캐스트</span>';
         renderIcons();
         msgDiv.innerText = '✓ 구글 스프레드시트에 성공적으로 추가되었습니다.';
         msgDiv.className = 'text-center text-xs font-semibold text-emerald-400 min-h-[1.25rem]';
@@ -675,24 +725,27 @@
         document.getElementById('solution').value = '';
         syncData();
         
-        // 1초 후 즉시 시트 다시 읽어오기
         setTimeout(pollRealtimeData, 1000);
 
       } catch (err) {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
+        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i><span>구글 시트 저장 및 실시간 브로드캐스트</span>';
         renderIcons();
         msgDiv.innerText = '저장 요청 중 오류가 발생했습니다.';
         msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
       }
     }
 
+    // Desktop Table + Mobile Cards Dual-Rendering
     function renderDashboardTable(rows) {
       const tbody = document.getElementById('dashboardTableBody');
+      const mobileContainer = document.getElementById('dashboardMobileCards');
       tbody.innerHTML = '';
+      mobileContainer.innerHTML = '';
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-slate-500">등록된 과제가 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-slate-500 font-mono">등록된 과제가 없습니다.</td></tr>';
+        mobileContainer.innerHTML = '<div class="py-6 text-center text-slate-500 text-xs font-mono">등록된 과제가 없습니다.</div>';
         return;
       }
 
@@ -707,6 +760,7 @@
         const transferInfo = getRowTransferStatus(r);
         if (transferInfo.label === '8. 실시 직행') allApprovedCount++;
 
+        // 1. Desktop Table Row
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 transition";
         tr.innerHTML = `
@@ -731,6 +785,48 @@
           </td>
         `;
         tbody.appendChild(tr);
+
+        // 2. Mobile Responsive Card (for iPhone, Galaxy, etc.)
+        const card = document.createElement('div');
+        card.className = "bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5 shadow-md";
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="font-mono text-xs font-bold text-slate-400 shrink-0">#${idx + 1}</span>
+              <h4 class="text-xs font-bold text-slate-100 truncate" title="${r.problem}">${r.problem}</h4>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] shrink-0 ${transferInfo.badgeClass}">
+              ${transferInfo.label}
+            </span>
+          </div>
+
+          <div class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-800/70 leading-relaxed break-all">
+            <span class="text-slate-500 font-semibold mr-1">개선:</span>${r.solution}
+          </div>
+
+          <!-- 3-Department Approval Controls Row -->
+          <div class="grid grid-cols-3 gap-1.5 pt-1">
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] font-semibold text-emerald-400 mb-1">생기</span>
+              ${renderDeptCell(r.id, 'saenggi', r.saenggi, true)}
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] font-semibold text-blue-400 mb-1">보전</span>
+              ${renderDeptCell(r.id, 'bojeon', r.bojeon, true)}
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] font-semibold text-amber-400 mb-1">안전</span>
+              ${renderDeptCell(r.id, 'anjeon', r.anjeon, true)}
+            </div>
+          </div>
+
+          <!-- Card Footer Meta -->
+          <div class="flex items-center justify-between pt-1 border-t border-slate-900 text-[10px] text-slate-500 font-mono">
+            <span>타이핑: <strong class="text-blue-400">${r.typingCount}회</strong></span>
+            <span>롤백: <strong class="${r.rollbackCount > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${r.rollbackCount}회</strong></span>
+          </div>
+        `;
+        mobileContainer.appendChild(card);
       });
 
       // Update Top KPIs
