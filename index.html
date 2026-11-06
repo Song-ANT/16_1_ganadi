@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>HINTER - 실시간 공정개선 통합 워크스페이스</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -523,10 +526,10 @@
       syncStatusEl.className = "text-amber-400 font-bold";
 
       try {
-        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (no-cors + text/plain 브라우저 호환)
+        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (redirect: follow + text/plain 완벽 호환)
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
-          mode: 'no-cors',
+          redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'updateDept',
@@ -582,7 +585,7 @@
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
-          mode: 'no-cors',
+          redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'create',
