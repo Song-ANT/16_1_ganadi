@@ -523,14 +523,16 @@
       syncStatusEl.className = "text-amber-400 font-bold";
 
       try {
-        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (no-cors 브로드캐스트)
+        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (no-cors + text/plain 브라우저 호환)
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'updateDept',
             rowIndex: rowId,
+            problem: target.problem,
+            solution: target.solution,
             dept: dept,
             status: nextVal
           })
@@ -581,7 +583,7 @@
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'create',
             problem: data.problem,

@@ -49,7 +49,18 @@ function doPost(e) {
     if (contents.action === "updateDept") {
       const colMap = { 'saenggi': 3, 'bojeon': 4, 'anjeon': 5 };
       const col = colMap[contents.dept];
-      const row = Number(contents.rowIndex);
+      let row = Number(contents.rowIndex);
+
+      // 문제점 텍스트로 실제 행을 정확하게 자동 탐색 (오프셋 100% 방지)
+      if (contents.problem) {
+        const allData = sheet.getDataRange().getValues();
+        for (let i = 0; i < allData.length; i++) {
+          if (String(allData[i][0]).trim() === String(contents.problem).trim()) {
+            row = i + 1;
+            break;
+          }
+        }
+      }
       
       if (col && row) {
         sheet.getRange(row, col).setValue(contents.status);
