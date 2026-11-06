@@ -36,7 +36,6 @@
       transform: translateY(0.5px);
     }
 
-    /* Pulse animation */
     @keyframes ping-slow {
       75%, 100% { transform: scale(1.8); opacity: 0; }
     }
@@ -58,7 +57,7 @@
             <span class="text-sm font-bold tracking-tight text-white">HINTER</span>
             <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">16_1_ganadi</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-none">공정개선 실시간 동기화 워크스페이스</p>
+          <p class="text-[11px] text-slate-400 leading-none">구글 시트 실시간 연동 워크스페이스</p>
         </div>
       </div>
 
@@ -78,19 +77,19 @@
           <button id="btnTab1" onclick="switchScreen(1)"
             class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm">
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-            <span>작성 & 계획표</span>
+            <span>1. 작성 & 계획표</span>
           </button>
           <button id="btnTab2" onclick="switchScreen(2)"
             class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-            <span>동시 승인 대시보드</span>
+            <span>2. 실시간 대시보드</span>
           </button>
         </nav>
       </div>
     </div>
   </header>
 
-  <!-- ==================== 화면 1: 개선안 작성 및 자동 완성 뷰 ==================== -->
+  <!-- ==================== 화면 1: 단일 작성 및 자동 완성 뷰 ==================== -->
   <main id="screen1" class="flex-1 max-w-7xl w-full mx-auto p-5 sm:p-6 lg:p-8 flex flex-col justify-center">
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -101,17 +100,15 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              개선안 단일 작성 및 3대 승인 게이트
+              개선안 단일 작성 및 승인 부서 지정
             </h2>
-            <p class="text-xs text-slate-400 mt-0.5">여기서 등록하거나 승인하면 구글 시트와 타 사용자 화면에도 즉시 반영됩니다.</p>
+            <p class="text-xs text-slate-400 mt-0.5">선택된 부서는 [-] 대기 상태로 등록되며, 미선택 부서는 [X] 처리됩니다.</p>
           </div>
           <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">시트 실시간 저장</span>
         </div>
 
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden interactive-card">
-          <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-transparent"></div>
-
-          <form id="taskForm" onsubmit="event.preventDefault(); submitData();" class="space-y-4">
+          <form id="planForm" onsubmit="event.preventDefault(); submitData();" class="space-y-4">
             
             <!-- Problem -->
             <div>
@@ -122,7 +119,7 @@
                 </label>
                 <span class="text-[11px] font-mono text-slate-500">2.1 분석</span>
               </div>
-              <textarea id="problem" rows="2" required placeholder="도출된 낭비 및 이슈 (예: 1라인 조립 대기시간 지연)" oninput="syncData()"
+              <textarea id="problem" rows="2" required placeholder="도출된 공정 문제점 이슈 (예: 1라인 조립 대기시간 지연)" oninput="syncData()"
                 class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
             </div>
 
@@ -131,60 +128,51 @@
               <div class="flex items-center justify-between mb-1.5">
                 <label for="solution" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                   <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400"></i>
-                  맞춤형 대책 (개선안)
+                  맞춤형 개선대책
                 </label>
                 <span class="text-[11px] font-mono text-slate-500">2.2 계획</span>
               </div>
-              <textarea id="solution" rows="2" required placeholder="구체적 개선 대책 (예: 레이아웃 변경 및 부품대 재배치)" oninput="syncData()"
+              <textarea id="solution" rows="2" required placeholder="구체적 개선대책 (예: 레이아웃 변경 및 부품대 재배치)" oninput="syncData()"
                 class="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-blue-500 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"></textarea>
             </div>
 
-            <!-- 3-Department Approval Gate -->
+            <!-- 3-Department Approval Selection -->
             <div class="pt-3 border-t border-slate-800/90">
               <div class="flex items-center justify-between mb-2">
                 <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  유관부서 실시간 타당성 승인
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i>
+                  원하는 승인 대상 부서 선택
                 </label>
-                <span class="text-[11px] text-amber-400 font-medium">동시 승인제</span>
+                <span class="text-[11px] text-slate-400">선택 시 [-] 대기 / 미선택 시 [X]</span>
               </div>
 
               <div class="grid grid-cols-3 gap-2.5">
-                <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 flex flex-col justify-between">
-                  <span class="text-[11px] font-bold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>생기</span>
-                    <span class="text-[9px] text-slate-500 font-normal">설비간섭</span>
-                  </span>
-                  <select id="saenggi" onchange="syncData()"
-                    class="bg-slate-900 border border-slate-700/80 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-slate-200">
-                    <option value="Y" class="text-emerald-400 font-bold">Y (승인)</option>
-                    <option value="N" class="text-rose-400 font-bold">N (미승인)</option>
-                  </select>
-                </div>
+                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+                  <input type="checkbox" id="deptSaenggi" checked onchange="syncData()"
+                    class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
+                  <div class="flex flex-col">
+                    <span class="text-xs font-bold text-slate-200">생산기술</span>
+                    <span class="text-[9px] text-slate-500">생기 승인</span>
+                  </div>
+                </label>
 
-                <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 flex flex-col justify-between">
-                  <span class="text-[11px] font-bold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>보전</span>
-                    <span class="text-[9px] text-slate-500 font-normal">가동률</span>
-                  </span>
-                  <select id="bojeon" onchange="syncData()"
-                    class="bg-slate-900 border border-slate-700/80 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-slate-200">
-                    <option value="Y" class="text-emerald-400 font-bold">Y (승인)</option>
-                    <option value="N" class="text-rose-400 font-bold">N (미승인)</option>
-                  </select>
-                </div>
+                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+                  <input type="checkbox" id="deptBojeon" checked onchange="syncData()"
+                    class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
+                  <div class="flex flex-col">
+                    <span class="text-xs font-bold text-slate-200">설비보전</span>
+                    <span class="text-[9px] text-slate-500">보전 승인</span>
+                  </div>
+                </label>
 
-                <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 flex flex-col justify-between">
-                  <span class="text-[11px] font-bold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>안전</span>
-                    <span class="text-[9px] text-slate-500 font-normal">위험요소</span>
-                  </span>
-                  <select id="anjeon" onchange="syncData()"
-                    class="bg-slate-900 border border-slate-700/80 rounded px-2 py-1 text-xs font-bold focus:outline-none focus:border-blue-500 text-slate-200">
-                    <option value="Y" class="text-emerald-400 font-bold">Y (승인)</option>
-                    <option value="N" class="text-rose-400 font-bold">N (미승인)</option>
-                  </select>
-                </div>
+                <label class="cursor-pointer flex items-center gap-2.5 bg-slate-950/70 border border-slate-800 hover:border-slate-700 rounded-lg p-2.5 transition select-none">
+                  <input type="checkbox" id="deptAnjeon" checked onchange="syncData()"
+                    class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700 cursor-pointer">
+                  <div class="flex flex-col">
+                    <span class="text-xs font-bold text-slate-200">안전환경</span>
+                    <span class="text-[9px] text-slate-500">안전 승인</span>
+                  </div>
+                </label>
               </div>
             </div>
 
@@ -206,10 +194,10 @@
         
         <div class="flex items-center justify-between">
           <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
-            개선활동계획표 자동 연동 뷰
+            개선활동계획서 자동 연동 뷰
           </h2>
-          <span id="badge-all-status" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            전원 승인 완료
+          <span id="badge-all-status" class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            검토 대기 중
           </span>
         </div>
 
@@ -217,13 +205,13 @@
           
           <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-[11px]">
             <span class="font-mono text-slate-400">양식 코드: NCS-02040103-PL</span>
-            <span class="text-slate-500">타이핑: <strong class="text-blue-400 font-mono">1회</strong> (중복 제거)</span>
+            <span class="text-slate-500">타이핑: <strong class="text-blue-400 font-mono">1회</strong> (단일 입력)</span>
           </div>
 
           <div class="space-y-1">
             <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-              <span>2.1 현상 및 문제점 분석</span>
-              <span class="text-blue-400 font-mono">자동 매칭됨</span>
+              <span>2.1 현장 문제점 분석</span>
+              <span class="text-blue-400 font-mono">실시간 미러링</span>
             </div>
             <div id="view-prob" class="bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed">
               (문제점을 입력하면 실시간으로 연동됩니다)
@@ -232,33 +220,33 @@
 
           <div class="space-y-1">
             <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-              <span>2.2 맞춤형 개선 대책</span>
-              <span class="text-emerald-400 font-mono">계획표 수립</span>
+              <span>2.2 맞춤형 개선대책</span>
+              <span class="text-emerald-400 font-mono">계획표 매핑</span>
             </div>
             <div id="view-sol" class="bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed">
-              (개선안을 입력하면 실시간으로 연동됩니다)
+              (개선대책을 입력하면 실시간으로 연동됩니다)
             </div>
           </div>
 
           <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
-            <div class="text-[11px] text-slate-400 font-medium">2.3 부서별 실시간 승인 상태</div>
+            <div class="text-[11px] text-slate-400 font-medium">2.3 유관부서 실시간 승인 상태</div>
             <div class="grid grid-cols-3 gap-2">
-              <div id="status-sg" class="py-1.5 px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[11px] font-bold">
-                생기: Y
+              <div id="status-sg" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+                생기: -
               </div>
-              <div id="status-bj" class="py-1.5 px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[11px] font-bold">
-                보전: Y
+              <div id="status-bj" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+                보전: -
               </div>
-              <div id="status-aj" class="py-1.5 px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[11px] font-bold">
-                안전: Y
+              <div id="status-aj" class="py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-center font-mono text-[11px] font-bold">
+                안전: -
               </div>
             </div>
           </div>
 
           <div class="bg-slate-950/90 rounded-lg p-3 border border-slate-800 text-xs flex items-center justify-between">
-            <span class="text-slate-400">차기 공정 이관 여부</span>
-            <span id="gate-decision" class="font-bold text-emerald-400 flex items-center gap-1">
-              <i data-lucide="check" class="w-3.5 h-3.5"></i> 8. 실시 단계로 자동 직행
+            <span class="text-slate-400">승인 종합 판정</span>
+            <span id="gate-decision" class="font-bold text-amber-400 flex items-center gap-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i> 부서 검토 대기
             </span>
           </div>
 
@@ -277,20 +265,20 @@
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-xs text-slate-400 font-medium">결과 KPI (총 롤백 발생)</span>
-          <div class="text-2xl font-bold text-emerald-400 mt-1" id="dashTotalRollbacks">0건</div>
-          <p class="text-[11px] text-slate-500 mt-0.5">목표: 0건 (원천 차단)</p>
+          <span class="text-xs text-slate-400 font-medium">핵심 KPI (총 롤백 발생)</span>
+          <div class="text-2xl font-bold text-rose-400 mt-1" id="dashTotalRollbacks">0건</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">목표: 0건 (반려 시 증가)</p>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+          <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
         </div>
       </div>
 
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-xs text-slate-400 font-medium">과정 KPI (평균 타이핑 횟수)</span>
+          <span class="text-xs text-slate-400 font-medium">혁신 KPI (평균 타이핑 횟수)</span>
           <div class="text-2xl font-bold text-blue-400 mt-1" id="dashAvgTyping">1.0회</div>
-          <p class="text-[11px] text-slate-500 mt-0.5">목표: 1회 (3회 → 1회 단축)</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">목표: 1회 (3회 ➔ 1회 축소)</p>
         </div>
         <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
           <i data-lucide="keyboard" class="w-5 h-5"></i>
@@ -299,7 +287,7 @@
 
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-xs text-slate-400 font-medium">전체 과제 수</span>
+          <span class="text-xs text-slate-400 font-medium">전체 등록 과제</span>
           <div class="text-2xl font-bold text-slate-200 mt-1" id="dashTotalCount">0건</div>
           <p class="text-[11px] text-slate-500 mt-0.5">구글 시트 연동</p>
         </div>
@@ -310,11 +298,11 @@
 
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-xs text-slate-400 font-medium">전 부서 승인율</span>
-          <div class="text-2xl font-bold text-indigo-400 mt-1" id="dashApprovalRate">0%</div>
+          <span class="text-xs text-slate-400 font-medium">실시 직행 승인율</span>
+          <div class="text-2xl font-bold text-emerald-400 mt-1" id="dashApprovalRate">0%</div>
           <p class="text-[11px] text-slate-500 mt-0.5" id="dashApprovalCount">0건 완료</p>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
           <i data-lucide="check-circle-2" class="w-5 h-5"></i>
         </div>
       </div>
@@ -328,7 +316,7 @@
             <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
             유관부서별 실시간 승인 현황 및 과제별 롤백 모니터링
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5">각 부서의 [Y / N] 버튼을 누르면 구글 시트에 즉시 저장되고 타 사용자에게 2초 내 전파됩니다.</p>
+          <p class="text-xs text-slate-400 mt-0.5">각 부서는 [-, Y, N] 드롭다운으로 변경 가능하며, 미지정 부서는 [X]로 잠깁니다.</p>
         </div>
         <div class="flex items-center gap-2">
           <a href="https://docs.google.com/spreadsheets/d/15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU/edit?usp=sharing" target="_blank"
@@ -345,10 +333,10 @@
             <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/60 font-mono">
               <th class="py-2.5 px-3">No</th>
               <th class="py-2.5 px-3">현장 문제점 (2.1)</th>
-              <th class="py-2.5 px-3">맞춤형 개선안 (2.2)</th>
-              <th class="py-2.5 px-2 text-center text-emerald-400">생기 (시트 동기화)</th>
-              <th class="py-2.5 px-2 text-center text-blue-400">보전 (시트 동기화)</th>
-              <th class="py-2.5 px-2 text-center text-amber-400">안전 (시트 동기화)</th>
+              <th class="py-2.5 px-3">맞춤형 개선대책 (2.2)</th>
+              <th class="py-2.5 px-2 text-center text-emerald-400">생기</th>
+              <th class="py-2.5 px-2 text-center text-blue-400">보전</th>
+              <th class="py-2.5 px-2 text-center text-amber-400">안전</th>
               <th class="py-2.5 px-2 text-center text-blue-400">타이핑</th>
               <th class="py-2.5 px-2 text-center text-rose-400">롤백</th>
               <th class="py-2.5 px-3 text-right">이관 상태</th>
@@ -378,8 +366,6 @@
   </footer>
 
   <script>
-    const SHEET_ID = '15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU';
-    const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
     const APPS_SCRIPT_URL = '/api/update';
 
     let currentRows = [];
@@ -404,18 +390,21 @@
       } else {
         s1.classList.add('hidden');
         s2.classList.remove('hidden');
-        b1.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
         b2.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-sm";
+        b1.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition";
+        renderDashboardTable(currentRows);
       }
       renderIcons();
     }
 
+    // 작성 폼 실시간 미러링
     function syncData() {
       const prob = document.getElementById('problem').value.trim();
       const sol = document.getElementById('solution').value.trim();
-      const sg = document.getElementById('saenggi').value;
-      const bj = document.getElementById('bojeon').value;
-      const aj = document.getElementById('anjeon').value;
+      
+      const sg = document.getElementById('deptSaenggi').checked ? '-' : 'X';
+      const bj = document.getElementById('deptBojeon').checked ? '-' : 'X';
+      const aj = document.getElementById('deptAnjeon').checked ? '-' : 'X';
 
       const probView = document.getElementById('view-prob');
       if (prob) {
@@ -431,17 +420,22 @@
         solView.innerText = sol;
         solView.className = "bg-slate-950 border border-emerald-500/40 rounded-lg p-3 text-xs text-slate-200 font-mono min-h-[46px] break-all leading-relaxed";
       } else {
-        solView.innerText = "(개선안을 입력하면 실시간으로 연동됩니다)";
+        solView.innerText = "(개선대책을 입력하면 실시간으로 연동됩니다)";
         solView.className = "bg-slate-950 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-500 font-mono min-h-[46px] break-all leading-relaxed";
       }
 
       const updateGate = (elId, name, val) => {
         const el = document.getElementById(elId);
+        if (!el) return;
         el.innerText = `${name}: ${val}`;
         if (val === 'Y') {
           el.className = "py-1.5 px-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-mono text-[11px] font-bold";
-        } else {
+        } else if (val === 'N') {
           el.className = "py-1.5 px-2 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-center font-mono text-[11px] font-bold";
+        } else if (val === '-') {
+          el.className = "py-1.5 px-2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-center font-mono text-[11px] font-bold";
+        } else {
+          el.className = "py-1.5 px-2 rounded bg-slate-900 border border-slate-800 text-slate-500 text-center font-mono text-[11px] font-bold";
         }
       };
 
@@ -449,25 +443,24 @@
       updateGate('status-bj', '보전', bj);
       updateGate('status-aj', '안전', aj);
 
-      const allApproved = (sg === 'Y' && bj === 'Y' && aj === 'Y');
-      const badgeStatus = document.getElementById('badge-all-status');
-      const gateDecision = document.getElementById('gate-decision');
+      const decisionEl = document.getElementById('gate-decision');
+      const allBadge = document.getElementById('badge-all-status');
+      const active = [sg, bj, aj].filter(v => v !== 'X');
 
-      if (allApproved) {
-        badgeStatus.innerText = "전원 승인 완료";
-        badgeStatus.className = "text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-        gateDecision.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> 8. 실시 단계로 자동 직행';
-        gateDecision.className = "font-bold text-emerald-400 flex items-center gap-1";
+      if (active.length === 0) {
+        decisionEl.innerHTML = '<i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> 부서 미선택';
+        decisionEl.className = "font-bold text-slate-500 flex items-center gap-1";
+        allBadge.innerText = '부서 미선택';
+        allBadge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700';
       } else {
-        badgeStatus.innerText = "보완 검토 중";
-        badgeStatus.className = "text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20";
-        gateDecision.innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> 미승인 항목 보완 대기';
-        gateDecision.className = "font-bold text-amber-400 flex items-center gap-1";
+        decisionEl.innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> 부서 검토 대기';
+        decisionEl.className = "font-bold text-amber-400 flex items-center gap-1";
+        allBadge.innerText = '검토 대기 중';
+        allBadge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20';
       }
       renderIcons();
     }
 
-    // Google Sheet 읽기 폴링
     // Google Apps Script 백엔드 직결 실시간 데이터 폴링
     async function pollRealtimeData() {
       if (isFetching) return;
@@ -484,11 +477,11 @@
                 id: r.rowIndex,
                 problem: String(r.problem || ''),
                 solution: String(r.solution || ''),
-                saenggi: override.saenggi !== undefined ? override.saenggi : (r.saenggi || 'N'),
-                bojeon: override.bojeon !== undefined ? override.bojeon : (r.bojeon || 'N'),
-                anjeon: override.anjeon !== undefined ? override.anjeon : (r.anjeon || 'N'),
+                saenggi: override.saenggi !== undefined ? override.saenggi : String(r.saenggi || '-').trim(),
+                bojeon: override.bojeon !== undefined ? override.bojeon : String(r.bojeon || '-').trim(),
+                anjeon: override.anjeon !== undefined ? override.anjeon : String(r.anjeon || '-').trim(),
                 typingCount: Number(r.typingCount) || 1,
-                rollbackCount: Number(r.rollbackCount) || 0
+                rollbackCount: override.rollbackCount !== undefined ? override.rollbackCount : (Number(r.rollbackCount) || 0)
               };
             });
 
@@ -503,26 +496,98 @@
       }
     }
 
-    // 1번 & 2번 달성: 버튼 클릭 시 Apps Script를 통해 구글 시트 실제 셀 값 수정 (Y <-> N)
-    async function toggleDepartmentApproval(rowId, dept) {
+    // 부서별 셀 렌더링 함수 (X: 비활성 고정 / 그 외: [-, Y, N] 드롭다운)
+    function renderDeptCell(rowId, dept, val) {
+      const v = (val || '-').toUpperCase().trim();
+
+      // 미선택 부서는 X 표시 및 드롭다운 비활성화
+      if (v === 'X') {
+        return `
+          <span class="inline-flex items-center justify-center w-14 py-1 rounded text-xs font-bold font-mono bg-slate-900/60 text-slate-500 border border-slate-800 cursor-not-allowed select-none" title="승인 대상 아님 (X)">
+            X
+          </span>
+        `;
+      }
+
+      // 선택된 부서는 3가지 드롭다운: [-, Y, N]
+      let styleClass = 'bg-amber-950/80 text-amber-300 border-amber-500/50 hover:border-amber-400';
+      if (v === 'Y') {
+        styleClass = 'bg-emerald-950/80 text-emerald-400 border-emerald-500/50 hover:border-emerald-400';
+      } else if (v === 'N') {
+        styleClass = 'bg-rose-950/80 text-rose-400 border-rose-500/50 hover:border-rose-400';
+      }
+
+      return `
+        <select onchange="updateDepartmentStatus(${rowId}, '${dept}', this.value)"
+          class="cursor-pointer px-2 py-1 rounded text-xs font-bold font-mono border text-center outline-none transition shadow-sm ${styleClass}">
+          <option value="-" ${v === '-' ? 'selected' : ''}>- (대기)</option>
+          <option value="Y" ${v === 'Y' ? 'selected' : ''}>Y (통과)</option>
+          <option value="N" ${v === 'N' ? 'selected' : ''}>N (반려)</option>
+        </select>
+      `;
+    }
+
+    // 이관 상태 판정 함수
+    function getRowTransferStatus(r) {
+      const depts = [r.saenggi, r.bojeon, r.anjeon].map(d => (d || '-').toUpperCase().trim());
+      const active = depts.filter(d => d !== 'X');
+
+      if (active.length === 0) {
+        return {
+          label: '대상 없음',
+          badgeClass: 'bg-slate-800/40 text-slate-400 border border-slate-700/40'
+        };
+      }
+
+      // 한 부서라도 N이면: 롤백 중 (빨간색)
+      if (active.some(d => d === 'N')) {
+        return {
+          label: '롤백 중',
+          badgeClass: 'bg-rose-500/20 text-rose-400 border border-rose-500/50 font-bold shadow-sm shadow-rose-950 animate-pulse'
+        };
+      }
+
+      // 모든 활성 부서가 Y이면: 8. 실시 직행 (초록색)
+      if (active.every(d => d === 'Y')) {
+        return {
+          label: '8. 실시 직행',
+          badgeClass: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold'
+        };
+      }
+
+      // 아직 -가 남아있고 N이 없는 경우: 검토 대기 (주황색)
+      return {
+        label: '검토 대기',
+        badgeClass: 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-medium'
+      };
+    }
+
+    // 부서 상태 변경 및 롤백 카운터 증가 처리
+    async function updateDepartmentStatus(rowId, dept, nextVal) {
       const target = currentRows.find(r => r.id === rowId);
       if (!target) return;
 
-      const currentVal = target[dept] || 'N';
-      const nextVal = (currentVal === 'Y') ? 'N' : 'Y';
-      
-      // 화면 즉시 반영
+      const prevVal = target[dept] || '-';
+      if (prevVal === nextVal) return;
+
+      let newRollback = Number(target.rollbackCount) || 0;
+      // 한 부서라도 N으로 변경되면 롤백 카운터 증가!
+      if (nextVal === 'N') {
+        newRollback += 1;
+        target.rollbackCount = newRollback;
+      }
+
       target[dept] = nextVal;
       if (!localOverrides[rowId]) localOverrides[rowId] = {};
       localOverrides[rowId][dept] = nextVal;
+      localOverrides[rowId].rollbackCount = newRollback;
       renderDashboardTable(currentRows);
 
       const syncStatusEl = document.getElementById('syncStatus');
-      syncStatusEl.innerText = `[${dept.toUpperCase()}] 시트 실제 저장 중...`;
+      syncStatusEl.innerText = `[${dept.toUpperCase()}] 시트 저장 중 (${nextVal})...`;
       syncStatusEl.className = "text-amber-400 font-bold";
 
       try {
-        // Vercel /api/update 백엔드로 전송 (동일 출처 직결 통신, CORS 제약 없음)
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -532,7 +597,8 @@
             problem: target.problem,
             solution: target.solution,
             dept: dept,
-            status: nextVal
+            status: nextVal,
+            rollbackCount: newRollback
           })
         });
 
@@ -543,10 +609,10 @@
           syncStatusEl.className = "text-slate-300";
         }, 2000);
 
-        // 3.5초 후 로컬 오버라이드 해제하여 시트의 실제 데이터로 지속 동기화
         setTimeout(() => {
           if (localOverrides[rowId]) {
             delete localOverrides[rowId][dept];
+            delete localOverrides[rowId].rollbackCount;
           }
         }, 3500);
 
@@ -560,19 +626,28 @@
       const btn = document.getElementById('saveBtn');
       const msgDiv = document.getElementById('message');
 
-      const data = {
-        problem: document.getElementById('problem').value.trim(),
-        solution: document.getElementById('solution').value.trim(),
-        saenggi: document.getElementById('saenggi').value,
-        bojeon: document.getElementById('bojeon').value,
-        anjeon: document.getElementById('anjeon').value
-      };
+      const saenggiChecked = document.getElementById('deptSaenggi').checked;
+      const bojeonChecked = document.getElementById('deptBojeon').checked;
+      const anjeonChecked = document.getElementById('deptAnjeon').checked;
 
-      if (!data.problem || !data.solution) {
-        msgDiv.innerText = '문제점과 개선안을 모두 입력해주세요.';
+      const problemVal = document.getElementById('problem').value.trim();
+      const solutionVal = document.getElementById('solution').value.trim();
+
+      if (!problemVal || !solutionVal) {
+        msgDiv.innerText = '문제점과 맞춤형 개선대책을 모두 입력해주세요.';
         msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
         return;
       }
+
+      if (!saenggiChecked && !bojeonChecked && !anjeonChecked) {
+        msgDiv.innerText = '최소 하나 이상의 승인 대상 부서를 선택해주세요.';
+        msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
+        return;
+      }
+
+      const saenggi = saenggiChecked ? '-' : 'X';
+      const bojeon = bojeonChecked ? '-' : 'X';
+      const anjeon = anjeonChecked ? '-' : 'X';
 
       btn.disabled = true;
       btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> 구글 시트에 실제 기록 중...';
@@ -583,18 +658,18 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'create',
-            problem: data.problem,
-            solution: data.solution,
-            saenggi: data.saenggi,
-            bojeon: data.bojeon,
-            anjeon: data.anjeon
+            problem: problemVal,
+            solution: solutionVal,
+            saenggi: saenggi,
+            bojeon: bojeon,
+            anjeon: anjeon
           })
         });
 
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
         renderIcons();
-        msgDiv.innerText = '✓ 구글 스프레드시트에 성공적으로 추가되었습니다!';
+        msgDiv.innerText = '✓ 구글 스프레드시트에 성공적으로 추가되었습니다.';
         msgDiv.className = 'text-center text-xs font-semibold text-emerald-400 min-h-[1.25rem]';
         document.getElementById('problem').value = '';
         document.getElementById('solution').value = '';
@@ -628,8 +703,9 @@
       rows.forEach((r, idx) => {
         totalRollbacks += Number(r.rollbackCount) || 0;
         totalTyping += Number(r.typingCount) || 0;
-        const isAll = (r.saenggi === 'Y' && r.bojeon === 'Y' && r.anjeon === 'Y');
-        if (isAll) allApprovedCount++;
+
+        const transferInfo = getRowTransferStatus(r);
+        if (transferInfo.label === '8. 실시 직행') allApprovedCount++;
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/40 transition";
@@ -638,38 +714,30 @@
           <td class="py-2.5 px-3 max-w-[180px] truncate text-slate-200" title="${r.problem}">${r.problem}</td>
           <td class="py-2.5 px-3 max-w-[180px] truncate text-slate-300" title="${r.solution}">${r.solution}</td>
           <td class="py-2.5 px-2 text-center">
-            <button onclick="toggleDepartmentApproval(${r.id}, 'saenggi')" title="클릭하여 Y/N 토글 및 시트 저장"
-              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.saenggi === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
-              ${r.saenggi}
-            </button>
+            ${renderDeptCell(r.id, 'saenggi', r.saenggi)}
           </td>
           <td class="py-2.5 px-2 text-center">
-            <button onclick="toggleDepartmentApproval(${r.id}, 'bojeon')" title="클릭하여 Y/N 토글 및 시트 저장"
-              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.bojeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
-              ${r.bojeon}
-            </button>
+            ${renderDeptCell(r.id, 'bojeon', r.bojeon)}
           </td>
           <td class="py-2.5 px-2 text-center">
-            <button onclick="toggleDepartmentApproval(${r.id}, 'anjeon')" title="클릭하여 Y/N 토글 및 시트 저장"
-              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.anjeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
-              ${r.anjeon}
-            </button>
+            ${renderDeptCell(r.id, 'anjeon', r.anjeon)}
           </td>
           <td class="py-2.5 px-2 text-center font-mono text-blue-400 font-bold">${r.typingCount}</td>
           <td class="py-2.5 px-2 text-center font-mono ${r.rollbackCount > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${r.rollbackCount}</td>
           <td class="py-2.5 px-3 text-right">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isAll ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
-              ${isAll ? '8. 실시 직행' : '보완 대기'}
+            <span class="px-2.5 py-1 rounded text-[11px] ${transferInfo.badgeClass}">
+              ${transferInfo.label}
             </span>
           </td>
         `;
         tbody.appendChild(tr);
       });
 
+      // Update Top KPIs
       document.getElementById('dashTotalRollbacks').innerText = totalRollbacks + '건';
       document.getElementById('dashAvgTyping').innerText = (totalTyping / rows.length).toFixed(1) + '회';
       document.getElementById('dashTotalCount').innerText = rows.length + '건';
-      document.getElementById('dashApprovalRate').innerText = Math.round((allApprovedCount / rows.length) * 100) + '%';
+      document.getElementById('dashApprovalRate').innerText = `${Math.round((allApprovedCount / rows.length) * 100)}%`;
       document.getElementById('dashApprovalCount').innerText = `${allApprovedCount}건 완료`;
     }
 

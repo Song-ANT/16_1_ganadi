@@ -1,16 +1,10 @@
 // =========================================================================================
-// [Google Apps Script 최종 완성 코드 - 시트 자동 감지 및 실시간 반영]
-// 1. 구글 시트 상단 메뉴: [확장 프로그램] -> [Apps Script] 클릭
-// 2. 기존 코드를 모두 지우고 아래 코드를 그대로 붙여넣기 (Ctrl+A -> Ctrl+V)
-// 3. 우측 상단 [배포] -> [배포 관리] 클릭
-// 4. 연필 아이콘(수정) 클릭 -> 버전 드롭다운에서 [새 버전] 선택 -> [배포] 클릭!
+// [Google Apps Script 최종 완성 코드 - 3대 승인 게이트 (Y, -, N, X) 및 롤백 동기화]
 // =========================================================================================
 
 function getTargetSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  // 1순위: '과제_대시보드' 시트가 있으면 사용
   let sheet = ss.getSheetByName("과제_대시보드");
-  // 2순위: 없으면 현재 데이터가 있는 첫 번째 시트를 자동으로 사용 (시트 이름 무관)
   if (!sheet) {
     sheet = ss.getSheets()[0];
   }
@@ -28,9 +22,9 @@ function doGet(e) {
       rowIndex: i + 1,
       problem: String(r[0] || ''),
       solution: String(r[1] || ''),
-      saenggi: String(r[2] || 'N'),
-      bojeon: String(r[3] || 'N'),
-      anjeon: String(r[4] || 'N'),
+      saenggi: String(r[2] || '-'),
+      bojeon: String(r[3] || '-'),
+      anjeon: String(r[4] || '-'),
       typingCount: Number(r[5]) || 1,
       rollbackCount: Number(r[6]) || 0
     });
@@ -45,13 +39,13 @@ function doPost(e) {
     const contents = JSON.parse(e.postData.contents);
     const sheet = getTargetSheet();
 
-    // 1) 승인 상태 토글 처리 (생기/보전/안전 버튼 클릭)
+    // 1) 승인 상태 업데이트 처리 (Y, -, N, X 및 롤백 카운트)
     if (contents.action === "updateDept") {
       const colMap = { 'saenggi': 3, 'bojeon': 4, 'anjeon': 5 };
       const col = colMap[contents.dept];
       let row = Number(contents.rowIndex);
 
-      // 문제점 텍스트로 실제 행을 정확하게 자동 탐색 (오프셋 100% 방지)
+      // 문제점 텍스트로 실제 행을 정확하게 자동 탐색
       if (contents.problem) {
         const allData = sheet.getDataRange().getValues();
         for (let i = 0; i < allData.length; i++) {
@@ -64,13 +58,17 @@ function doPost(e) {
       
       if (col && row) {
         sheet.getRange(row, col).setValue(contents.status);
+        if (contents.rollbackCount !== undefined && contents.rollbackCount !== null) {
+          sheet.getRange(row, 7).setValue(Number(contents.rollbackCount));
+        }
         SpreadsheetApp.flush(); // 즉시 구글 시트 DB에 기록 강제
         return ContentService.createTextOutput(JSON.stringify({ 
           success: true, 
           message: "업데이트 성공", 
           row: row, 
           col: col, 
-          status: contents.status 
+          status: contents.status,
+          rollbackCount: contents.rollbackCount
         })).setMimeType(ContentService.MimeType.JSON);
       }
     }
@@ -80,9 +78,9 @@ function doPost(e) {
       sheet.appendRow([
         contents.problem || "",
         contents.solution || "",
-        contents.saenggi || "N",
-        contents.bojeon || "N",
-        contents.anjeon || "N",
+        contents.saenggi || "-",
+        contents.bojeon || "-",
+        contents.anjeon || "-",
         1,
         0
       ]);
