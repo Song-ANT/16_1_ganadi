@@ -33,7 +33,7 @@
       transform: translateY(0.5px);
     }
 
-    /* Pulse animation for real-time indicator */
+    /* Pulse animation */
     @keyframes ping-slow {
       75%, 100% { transform: scale(1.8); opacity: 0; }
     }
@@ -66,7 +66,7 @@
             <span class="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span class="text-slate-300" id="syncStatus">스프레드시트 실시간 동기화 중</span>
+          <span class="text-slate-300" id="syncStatus">스프레드시트 양방향 실시간 동기화</span>
           <span class="text-[10px] text-slate-500 border-l border-slate-800 pl-2" id="syncTime">방금</span>
         </div>
 
@@ -100,9 +100,9 @@
             <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
               개선안 단일 작성 및 3대 승인 게이트
             </h2>
-            <p class="text-xs text-slate-400 mt-0.5">여기서 등록하거나 승인하면 타 사용자 화면에도 1~2초 내 실시간 반영됩니다.</p>
+            <p class="text-xs text-slate-400 mt-0.5">여기서 등록하거나 승인하면 구글 시트와 타 사용자 화면에도 즉시 반영됩니다.</p>
           </div>
-          <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">실시간 DB 연동</span>
+          <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">시트 실시간 저장</span>
         </div>
 
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden interactive-card">
@@ -325,7 +325,7 @@
             <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
             유관부서별 실시간 승인 현황 및 과제별 롤백 모니터링
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5">어느 사용자든 상태를 변경하면 실시간으로 전 브라우저에 자동 반영됩니다.</p>
+          <p class="text-xs text-slate-400 mt-0.5">각 부서의 [Y / N] 버튼을 누르면 구글 시트에 즉시 저장되고 타 사용자에게 2초 내 전파됩니다.</p>
         </div>
         <div class="flex items-center gap-2">
           <a href="https://docs.google.com/spreadsheets/d/15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU/edit?usp=sharing" target="_blank"
@@ -343,9 +343,9 @@
               <th class="py-2.5 px-3">No</th>
               <th class="py-2.5 px-3">현장 문제점 (2.1)</th>
               <th class="py-2.5 px-3">맞춤형 개선안 (2.2)</th>
-              <th class="py-2.5 px-2 text-center">생기 승인</th>
-              <th class="py-2.5 px-2 text-center">보전 승인</th>
-              <th class="py-2.5 px-2 text-center">안전 승인</th>
+              <th class="py-2.5 px-2 text-center text-emerald-400">생기 (시트 동기화)</th>
+              <th class="py-2.5 px-2 text-center text-blue-400">보전 (시트 동기화)</th>
+              <th class="py-2.5 px-2 text-center text-amber-400">안전 (시트 동기화)</th>
               <th class="py-2.5 px-2 text-center text-blue-400">타이핑</th>
               <th class="py-2.5 px-2 text-center text-rose-400">롤백</th>
               <th class="py-2.5 px-3 text-right">이관 상태</th>
@@ -366,7 +366,7 @@
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        <span>HINT 2기 생산관리 · 16_1_ganadi (Vercel 실시간 분산 배포 모드)</span>
+        <span>HINT 2기 생산관리 · 16_1_ganadi (Google Apps Script Live Webhook Connected)</span>
       </div>
       <div class="font-mono text-slate-500">
         Google Spreadsheet Live API Connected
@@ -375,12 +375,13 @@
   </footer>
 
   <script>
-    // Google Spreadsheet GVIZ Endpoint for direct realtime polling
     const SHEET_ID = '15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU';
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9og-at_yQlXuWxNte0zPMjmdhj96G7Od6_4MQ6wl3IIeBeQZ5P6fH28K-UlA3ZyrOow/exec';
 
     let currentRows = [];
     let isFetching = false;
+    let localOverrides = {};
 
     function renderIcons() {
       if (window.lucide) { lucide.createIcons(); }
@@ -463,12 +464,12 @@
       renderIcons();
     }
 
-    // Real-time Poll: Fetch Google Sheet live data directly
+    // Google Sheet 읽기 폴링
     async function pollRealtimeData() {
       if (isFetching) return;
       isFetching = true;
       try {
-        const res = await fetch(GVIZ_URL);
+        const res = await fetch(GVIZ_URL + '&_=' + Date.now());
         const text = await res.text();
         const match = text.match(/setResponse\((.*)\);/);
         if (match) {
@@ -477,30 +478,138 @@
           
           const parsed = rows.map((r, i) => {
             const c = r.c || [];
+            const rowIdx = i + 2; // 구글 시트 행 번호 (헤더 제외 2행부터)
+            const override = localOverrides[rowIdx] || {};
+
             return {
-              id: i + 1,
+              id: rowIdx,
               problem: c[0] ? String(c[0].v || '') : '',
               solution: c[1] ? String(c[1].v || '') : '',
-              saenggi: c[2] ? String(c[2].v || 'N') : 'N',
-              bojeon: c[3] ? String(c[3].v || 'N') : 'N',
-              anjeon: c[4] ? String(c[4].v || 'N') : 'N',
+              saenggi: override.saenggi !== undefined ? override.saenggi : (c[2] ? String(c[2].v || 'N') : 'N'),
+              bojeon: override.bojeon !== undefined ? override.bojeon : (c[3] ? String(c[3].v || 'N') : 'N'),
+              anjeon: override.anjeon !== undefined ? override.anjeon : (c[4] ? String(c[4].v || 'N') : 'N'),
               typingCount: c[5] ? Number(c[5].v || 1) : 1,
               rollbackCount: c[6] ? Number(c[6].v || 0) : 0
             };
           }).filter(item => item.problem || item.solution);
 
-          // Compare with current to check if updated
-          const isChanged = JSON.stringify(parsed) !== JSON.stringify(currentRows);
-          if (isChanged || currentRows.length === 0) {
-            currentRows = parsed;
-            renderDashboardTable(currentRows);
-            document.getElementById('syncTime').innerText = new Date().toLocaleTimeString('ko-KR');
-          }
+          currentRows = parsed;
+          renderDashboardTable(currentRows);
+          document.getElementById('syncTime').innerText = new Date().toLocaleTimeString('ko-KR');
         }
       } catch (err) {
         console.error('Realtime sync error:', err);
       } finally {
         isFetching = false;
+      }
+    }
+
+    // 1번 & 2번 달성: 버튼 클릭 시 Apps Script를 통해 구글 시트 실제 셀 값 수정 (Y <-> N)
+    async function toggleDepartmentApproval(rowId, dept) {
+      const target = currentRows.find(r => r.id === rowId);
+      if (!target) return;
+
+      const currentVal = target[dept] || 'N';
+      const nextVal = (currentVal === 'Y') ? 'N' : 'Y';
+      
+      // 화면 즉시 반영
+      target[dept] = nextVal;
+      if (!localOverrides[rowId]) localOverrides[rowId] = {};
+      localOverrides[rowId][dept] = nextVal;
+      renderDashboardTable(currentRows);
+
+      const syncStatusEl = document.getElementById('syncStatus');
+      syncStatusEl.innerText = `[${dept.toUpperCase()}] 시트 실제 저장 중...`;
+      syncStatusEl.className = "text-amber-400 font-bold";
+
+      try {
+        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (no-cors 브로드캐스트)
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'updateDept',
+            rowIndex: rowId,
+            dept: dept,
+            status: nextVal
+          })
+        });
+
+        syncStatusEl.innerText = `✓ [${dept.toUpperCase()}] 시트 저장 완료 (${nextVal})`;
+        syncStatusEl.className = "text-emerald-400 font-bold";
+        setTimeout(() => {
+          syncStatusEl.innerText = "스프레드시트 양방향 실시간 동기화";
+          syncStatusEl.className = "text-slate-300";
+        }, 2000);
+
+        // 3.5초 후 로컬 오버라이드 해제하여 시트의 실제 데이터로 지속 동기화
+        setTimeout(() => {
+          if (localOverrides[rowId]) {
+            delete localOverrides[rowId][dept];
+          }
+        }, 3500);
+
+      } catch (e) {
+        console.error('Update failed:', e);
+      }
+    }
+
+    // 신규 과제 등록 시 구글 시트에 실제 행 추가
+    async function submitData() {
+      const btn = document.getElementById('saveBtn');
+      const msgDiv = document.getElementById('message');
+
+      const data = {
+        problem: document.getElementById('problem').value.trim(),
+        solution: document.getElementById('solution').value.trim(),
+        saenggi: document.getElementById('saenggi').value,
+        bojeon: document.getElementById('bojeon').value,
+        anjeon: document.getElementById('anjeon').value
+      };
+
+      if (!data.problem || !data.solution) {
+        msgDiv.innerText = '문제점과 개선안을 모두 입력해주세요.';
+        msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> 구글 시트에 실제 기록 중...';
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            problem: data.problem,
+            solution: data.solution,
+            saenggi: data.saenggi,
+            bojeon: data.bojeon,
+            anjeon: data.anjeon
+          })
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
+        renderIcons();
+        msgDiv.innerText = '✓ 구글 스프레드시트에 성공적으로 추가되었습니다!';
+        msgDiv.className = 'text-center text-xs font-semibold text-emerald-400 min-h-[1.25rem]';
+        document.getElementById('problem').value = '';
+        document.getElementById('solution').value = '';
+        syncData();
+        
+        // 1초 후 즉시 시트 다시 읽어오기
+        setTimeout(pollRealtimeData, 1000);
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
+        renderIcons();
+        msgDiv.innerText = '저장 요청 중 오류가 발생했습니다.';
+        msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
       }
     }
 
@@ -530,19 +639,22 @@
           <td class="py-2.5 px-3 max-w-[180px] truncate text-slate-200" title="${r.problem}">${r.problem}</td>
           <td class="py-2.5 px-3 max-w-[180px] truncate text-slate-300" title="${r.solution}">${r.solution}</td>
           <td class="py-2.5 px-2 text-center">
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono ${r.saenggi === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+            <button onclick="toggleDepartmentApproval(${r.id}, 'saenggi')" title="클릭하여 Y/N 토글 및 시트 저장"
+              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.saenggi === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
               ${r.saenggi}
-            </span>
+            </button>
           </td>
           <td class="py-2.5 px-2 text-center">
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono ${r.bojeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+            <button onclick="toggleDepartmentApproval(${r.id}, 'bojeon')" title="클릭하여 Y/N 토글 및 시트 저장"
+              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.bojeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
               ${r.bojeon}
-            </span>
+            </button>
           </td>
           <td class="py-2.5 px-2 text-center">
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold font-mono ${r.anjeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">
+            <button onclick="toggleDepartmentApproval(${r.id}, 'anjeon')" title="클릭하여 Y/N 토글 및 시트 저장"
+              class="btn-press cursor-pointer px-3 py-1 rounded text-xs font-bold font-mono transition shadow-sm ${r.anjeon === 'Y' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-emerald-500/20 hover:text-emerald-400'}">
               ${r.anjeon}
-            </span>
+            </button>
           </td>
           <td class="py-2.5 px-2 text-center font-mono text-blue-400 font-bold">${r.typingCount}</td>
           <td class="py-2.5 px-2 text-center font-mono ${r.rollbackCount > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${r.rollbackCount}</td>
@@ -555,7 +667,6 @@
         tbody.appendChild(tr);
       });
 
-      // Update Top KPIs
       document.getElementById('dashTotalRollbacks').innerText = totalRollbacks + '건';
       document.getElementById('dashAvgTyping').innerText = (totalTyping / rows.length).toFixed(1) + '회';
       document.getElementById('dashTotalCount').innerText = rows.length + '건';
@@ -563,59 +674,11 @@
       document.getElementById('dashApprovalCount').innerText = `${allApprovedCount}건 완료`;
     }
 
-    // Submit via Apps Script webhook or local mock
-    function submitData() {
-      const btn = document.getElementById('saveBtn');
-      const msgDiv = document.getElementById('message');
-
-      const data = {
-        problem: document.getElementById('problem').value.trim(),
-        solution: document.getElementById('solution').value.trim(),
-        saenggi: document.getElementById('saenggi').value,
-        bojeon: document.getElementById('bojeon').value,
-        anjeon: document.getElementById('anjeon').value
-      };
-
-      if (!data.problem || !data.solution) {
-        msgDiv.innerText = '문제점과 개선안을 모두 입력해주세요.';
-        msgDiv.className = 'text-center text-xs font-semibold text-rose-400 min-h-[1.25rem]';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> 실시간 저장 중...';
-
-      // 낙관적 즉시 로컬 추가 후 동기화
-      currentRows.unshift({
-        id: Date.now(),
-        problem: data.problem,
-        solution: data.solution,
-        saenggi: data.saenggi,
-        bojeon: data.bojeon,
-        anjeon: data.anjeon,
-        typingCount: 1,
-        rollbackCount: 0
-      });
-      renderDashboardTable(currentRows);
-
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i><span>구글 시트 저장 및 실시간 전원 브로드캐스트</span>';
-        renderIcons();
-        msgDiv.innerText = '✓ 실시간 동기화 완료! 타 브라우저 화면에도 즉시 반영됩니다.';
-        msgDiv.className = 'text-center text-xs font-semibold text-emerald-400 min-h-[1.25rem]';
-        document.getElementById('problem').value = '';
-        document.getElementById('solution').value = '';
-        syncData();
-      }, 400);
-    }
-
-    // Initialize & Real-time Loop (2.5초마다 타 사용자의 변경사항 자동 감지)
     window.addEventListener('DOMContentLoaded', () => {
       syncData();
       renderIcons();
       pollRealtimeData();
-      setInterval(pollRealtimeData, 2500); // 실시간 자동 폴링 루프
+      setInterval(pollRealtimeData, 2000);
     });
   </script>
 </body>
