@@ -468,33 +468,29 @@
     }
 
     // Google Sheet 읽기 폴링
+    // Google Apps Script 백엔드 직결 실시간 데이터 폴링
     async function pollRealtimeData() {
       if (isFetching) return;
       isFetching = true;
       try {
-        const res = await fetch(GVIZ_URL + '&_=' + Date.now());
-        const text = await res.text();
-        const match = text.match(/setResponse\((.*)\);/);
-        if (match) {
-          const json = JSON.parse(match[1]);
-          const rows = json.table.rows || [];
-          
-          const parsed = rows.map((r, i) => {
-            const c = r.c || [];
-            const rowIdx = i + 2; // 구글 시트 행 번호 (헤더 제외 2행부터)
-            const override = localOverrides[rowIdx] || {};
-
-            return {
-              id: rowIdx,
-              problem: c[0] ? String(c[0].v || '') : '',
-              solution: c[1] ? String(c[1].v || '') : '',
-              saenggi: override.saenggi !== undefined ? override.saenggi : (c[2] ? String(c[2].v || 'N') : 'N'),
-              bojeon: override.bojeon !== undefined ? override.bojeon : (c[3] ? String(c[3].v || 'N') : 'N'),
-              anjeon: override.anjeon !== undefined ? override.anjeon : (c[4] ? String(c[4].v || 'N') : 'N'),
-              typingCount: c[5] ? Number(c[5].v || 1) : 1,
-              rollbackCount: c[6] ? Number(c[6].v || 0) : 0
-            };
-          }).filter(item => item.problem || item.solution);
+        const res = await fetch('/api/rows?_=' + Date.now());
+        const json = await res.json();
+        if (json.success && json.rows) {
+          const parsed = json.rows
+            .filter(r => r.problem !== '문제점' && (r.problem || r.solution))
+            .map(r => {
+              const override = localOverrides[r.rowIndex] || {};
+              return {
+                id: r.rowIndex,
+                problem: String(r.problem || ''),
+                solution: String(r.solution || ''),
+                saenggi: override.saenggi !== undefined ? override.saenggi : (r.saenggi || 'N'),
+                bojeon: override.bojeon !== undefined ? override.bojeon : (r.bojeon || 'N'),
+                anjeon: override.anjeon !== undefined ? override.anjeon : (r.anjeon || 'N'),
+                typingCount: Number(r.typingCount) || 1,
+                rollbackCount: Number(r.rollbackCount) || 0
+              };
+            });
 
           currentRows = parsed;
           renderDashboardTable(currentRows);
