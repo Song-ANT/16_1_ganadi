@@ -380,7 +380,7 @@
   <script>
     const SHEET_ID = '15o9PKr17SsNdbHx3ewez6AQLnJ4kq2g2l0_69n482cU';
     const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9og-at_yQlXuWxNte0zPMjmdhj96G7Od6_4MQ6wl3IIeBeQZ5P6fH28K-UlA3ZyrOow/exec';
+    const APPS_SCRIPT_URL = '/api/update';
 
     let currentRows = [];
     let isFetching = false;
@@ -526,11 +526,10 @@
       syncStatusEl.className = "text-amber-400 font-bold";
 
       try {
-        // Apps Script 웹앱으로 실제 시트 업데이트 전송 (redirect: follow + text/plain 완벽 호환)
+        // Vercel /api/update 백엔드로 전송 (동일 출처 직결 통신, CORS 제약 없음)
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
-          redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'updateDept',
             rowIndex: rowId,
@@ -585,8 +584,7 @@
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
-          redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'create',
             problem: data.problem,
